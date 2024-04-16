@@ -65,6 +65,7 @@ function displayEncryptedPhrase() {
             input.type = 'text';
             input.maxLength = 1;
             input.dataset.char = cipher[char];
+            input.dataset.original = char; // Store the original character
             const cipherText = document.createElement('div');
             cipherText.textContent = cipher[char];
             cipherText.className = 'cipher';
@@ -96,15 +97,14 @@ function resetGame() {
 
 function toggleAnswer() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
-    const ciphers = document.querySelectorAll('.cipher');
     if (inputs[0].disabled) {
-        inputs.forEach((input, index) => {
-            input.value = input.dataset.char;  // Show cipher letter
+        inputs.forEach(input => {
             input.disabled = false;
+            input.value = '';  // Clear the input field
         });
     } else {
-        inputs.forEach((input, index) => {
-            input.value = ciphers[index].parentNode.dataset.original;  // Show original letter
+        inputs.forEach(input => {
+            input.value = input.dataset.original;  // Show the original character
             input.disabled = true;
         });
     }
