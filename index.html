@@ -7,7 +7,8 @@
     body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; }
     h1 { text-align: center; }
     .game-container { max-width: 600px; margin: auto; padding: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .phrase { margin: 20px 0; font-size: 20px; text-align: center; white-space: nowrap; overflow-x: auto; }
+    .phrase { margin: 20px 0; font-size: 20px; text-align: center; }
+    .word { display: inline-block; margin-right: 5px; vertical-align: top; }
     input[type="text"] { margin: 5px; width: 40px; height: 40px; font-size: 16px; text-align: center; }
     .cipher { font-size: 12px; color: #777; text-align: center; }
     button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
@@ -29,11 +30,11 @@
 
 <script>
 const phrases = [
-    "It is what it is", "You know what?", "Pretty, pretty, pretty good",
-    "Six bucks pretty good for a little guy. Six bucks pretty good not bad.",
+    "It is what it is", "You know what?", "Pretty pretty pretty good",
+    "Six bucks pretty good for a little guy Six bucks pretty good not bad",
     "Curly part of a complete breakfast",
-    "Ninety estate drive was the worst house we ever lived in. Why did we ever buy this house? Sheridan road is a highway",
-    "My favorite hectshure is KE. Kosher enough. This is the minhag for Florida.",
+    "Ninety estate drive was the worst house we ever lived in Why did we ever buy this house Sheridan road is a highway",
+    "My favorite hectshure is KE Kosher enough This is the minhag for Florida",
     "I would like to speak to your mangeress"
 ];
 
@@ -54,20 +55,25 @@ let encryptedPhrase = currentPhrase.split('').map(char => cipher[char] || char).
 function displayEncryptedPhrase() {
     const phraseContainer = document.querySelector('.phrase');
     phraseContainer.innerHTML = '';
-    encryptedPhrase.split('').forEach((char, index) => {
-        const container = document.createElement('div');
-        container.style.display = 'inline-block';
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.maxLength = 1;
-        input.dataset.char = cipher[currentPhrase[index]];
-        const cipherText = document.createElement('div');
-        cipherText.textContent = input.dataset.char;
-        cipherText.className = 'cipher';
+    currentPhrase.split(' ').forEach(word => {
+        const wordContainer = document.createElement('span');
+        wordContainer.className = 'word';
+        word.split('').forEach((char, index) => {
+            const container = document.createElement('div');
+            container.style.display = 'inline-block';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.maxLength = 1;
+            input.dataset.char = cipher[char];
+            const cipherText = document.createElement('div');
+            cipherText.textContent = cipher[char];
+            cipherText.className = 'cipher';
 
-        container.appendChild(cipherText);
-        container.appendChild(input);
-        phraseContainer.appendChild(container);
+            container.appendChild(cipherText);
+            container.appendChild(input);
+            wordContainer.appendChild(container);
+        });
+        phraseContainer.appendChild(wordContainer);
     });
 }
 
@@ -91,11 +97,17 @@ function resetGame() {
 function toggleAnswer() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
     const ciphers = document.querySelectorAll('.cipher');
-    inputs.forEach((input, index) => {
-        if (input.type === 'text') {
-            input.value = (input.value ? '' : ciphers[index].textContent);
-        }
-    });
+    if (inputs[0].disabled) {
+        inputs.forEach((input, index) => {
+            input.value = input.dataset.char;  // Show cipher letter
+            input.disabled = false;
+        });
+    } else {
+        inputs.forEach((input, index) => {
+            input.value = ciphers[index].parentNode.dataset.original;  // Show original letter
+            input.disabled = true;
+        });
+    }
 }
 
 function markCompleted(index) {
