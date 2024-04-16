@@ -21,6 +21,7 @@
     <div>
         <button onclick="checkSolution()">Check Solution</button>
         <button onclick="resetGame()">Reset</button>
+        <button onclick="showAnswer()">Show Answer</button>
     </div>
     <div id="solution"></div>
 </div>
@@ -45,39 +46,54 @@ function generateCipher() {
 }
 
 let cipher = generateCipher();
-let currentPhrase = phrases[Math.floor(Math.random() * phrases.length)].toUpperCase();
+let currentIndex = parseInt(localStorage.getItem('currentIndex') || 0);
+let currentPhrase = phrases[currentIndex % phrases.length].toUpperCase();
 let encryptedPhrase = currentPhrase.split('').map(char => cipher[char] || char).join('');
 
 function displayEncryptedPhrase() {
     const phraseContainer = document.querySelector('.phrase');
     phraseContainer.innerHTML = '';
-    encryptedPhrase.split('').forEach(char => {
+    encryptedPhrase.split('').forEach((char, index) => {
         const input = document.createElement('input');
         input.type = 'text';
         input.maxLength = 1;
         input.value = char;
-        input.oninput = function() { this.value = this.value.toUpperCase(); };
-        if (!/[A-Z]/.test(char)) {
-            input.disabled = true;
-        }
+        input.disabled = true; // Initially disable input to show the cipher
+        input.dataset.original = currentPhrase[index]; // Store original character for reference
         phraseContainer.appendChild(input);
     });
 }
 
 function checkSolution() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
-    const decryptedPhrase = Array.from(inputs).map(input => {
-        return Object.keys(cipher).find(key => cipher[key] === input.value) || input.value;
-    }).join('');
-    document.getElementById('solution').textContent = decryptedPhrase === currentPhrase ? 'Correct!' : 'Incorrect, try again!';
+    const solution = Array.from(inputs).map(input => input.dataset.original).join('');
+    document.getElementById('solution').textContent = solution;
+    markCompleted(currentIndex);
 }
 
 function resetGame() {
+    currentIndex = (currentIndex + 1) % phrases.length;
+    localStorage.setItem('currentIndex', currentIndex);
     cipher = generateCipher();
-    currentPhrase = phrases[Math.floor(Math.random() * phrases.length)].toUpperCase();
+    currentPhrase = phrases[currentIndex].toUpperCase();
     encryptedPhrase = currentPhrase.split('').map(char => cipher[char] || char).join('');
     displayEncryptedPhrase();
     document.getElementById('solution').textContent = '';
+}
+
+function showAnswer() {
+    const inputs = document.querySelectorAll('.phrase input[type=text]');
+    inputs.forEach(input => {
+        input.value = input.dataset.original;
+    });
+}
+
+function markCompleted(index) {
+    let completed = JSON.parse(localStorage.getItem('completed') || '[]');
+    if (!completed.includes(index)) {
+        completed.push(index);
+    }
+    localStorage.setItem('completed', JSON.stringify(completed));
 }
 
 window.onload = displayEncryptedPhrase;
