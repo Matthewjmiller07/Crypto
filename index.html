@@ -7,8 +7,9 @@
     body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; }
     h1 { text-align: center; }
     .game-container { max-width: 600px; margin: auto; padding: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .phrase { margin: 20px 0; font-size: 20px; text-align: center; }
+    .phrase { margin: 20px 0; font-size: 20px; text-align: center; white-space: nowrap; overflow-x: auto; }
     input[type="text"] { margin: 5px; width: 40px; height: 40px; font-size: 16px; text-align: center; }
+    .cipher { font-size: 12px; color: #777; text-align: center; }
     button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
     button:hover { background-color: #0056b3; }
     #solution { margin-top: 20px; text-align: center; font-size: 24px; }
@@ -21,7 +22,7 @@
     <div>
         <button onclick="checkSolution()">Check Solution</button>
         <button onclick="resetGame()">Reset</button>
-        <button onclick="showAnswer()">Show Answer</button>
+        <button onclick="toggleAnswer()">Toggle Answer</button>
     </div>
     <div id="solution"></div>
 </div>
@@ -54,21 +55,27 @@ function displayEncryptedPhrase() {
     const phraseContainer = document.querySelector('.phrase');
     phraseContainer.innerHTML = '';
     encryptedPhrase.split('').forEach((char, index) => {
+        const container = document.createElement('div');
+        container.style.display = 'inline-block';
         const input = document.createElement('input');
         input.type = 'text';
         input.maxLength = 1;
-        input.value = char;
-        input.disabled = true; // Initially disable input to show the cipher
-        input.dataset.original = currentPhrase[index]; // Store original character for reference
-        phraseContainer.appendChild(input);
+        input.dataset.char = cipher[currentPhrase[index]];
+        const cipherText = document.createElement('div');
+        cipherText.textContent = input.dataset.char;
+        cipherText.className = 'cipher';
+
+        container.appendChild(cipherText);
+        container.appendChild(input);
+        phraseContainer.appendChild(container);
     });
 }
 
 function checkSolution() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
-    const solution = Array.from(inputs).map(input => input.dataset.original).join('');
-    document.getElementById('solution').textContent = solution;
-    markCompleted(currentIndex);
+    const solution = Array.from(inputs).map(input => input.value.toUpperCase()).join('');
+    document.getElementById('solution').textContent = solution === currentPhrase ? 'Correct!' : 'Incorrect, try again!';
+    if (solution === currentPhrase) markCompleted(currentIndex);
 }
 
 function resetGame() {
@@ -81,10 +88,13 @@ function resetGame() {
     document.getElementById('solution').textContent = '';
 }
 
-function showAnswer() {
+function toggleAnswer() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
-    inputs.forEach(input => {
-        input.value = input.dataset.original;
+    const ciphers = document.querySelectorAll('.cipher');
+    inputs.forEach((input, index) => {
+        if (input.type === 'text') {
+            input.value = (input.value ? '' : ciphers[index].textContent);
+        }
     });
 }
 
