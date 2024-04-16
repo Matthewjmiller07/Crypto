@@ -6,14 +6,15 @@
 <style>
     body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; }
     h1 { text-align: center; }
-    .game-container { max-width: 600px; margin: auto; padding: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .game-container { max-width: 800px; margin: auto; padding: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .phrase { margin: 20px 0; font-size: 20px; text-align: center; }
-    .word { display: inline-block; margin-right: 5px; vertical-align: top; border-bottom: 2px solid black; } /* Added a border to each word */
+    .word { display: inline-block; margin: 0 10px; vertical-align: top; border-bottom: 2px solid black; } /* Increased space between words */
     input[type="text"] { margin: 5px; width: 40px; height: 40px; font-size: 16px; text-align: center; }
     .cipher { font-size: 12px; color: #777; text-align: center; }
     button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
     button:hover { background-color: #0056b3; }
-    #solution { margin-top: 20px; text-align: center; font-size: 24px; }
+    #solution, #completed-puzzles { margin-top: 20px; text-align: center; font-size: 24px; }
+    .completed-list { font-size: 18px; color: green; }
 </style>
 </head>
 <body>
@@ -26,6 +27,7 @@
         <button onclick="toggleAnswer()">Toggle Answer</button>
     </div>
     <div id="solution"></div>
+    <div id="completed-puzzles">Completed Puzzles: <span class="completed-list"></span></div>
 </div>
 
 <script>
@@ -41,7 +43,6 @@ const phrases = [
 function generateCipher() {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     const shuffled = alphabet.slice().sort(() => Math.random() - 0.5);
-    console.log("Cipher created:", shuffled); // Log cipher mapping
     return alphabet.reduce((acc, letter, i) => {
         acc[letter] = shuffled[i];
         return acc;
@@ -50,8 +51,7 @@ function generateCipher() {
 
 let cipher = generateCipher();
 let currentIndex = parseInt(localStorage.getItem('currentIndex') || 0);
-let currentPhrase = phrases[currentIndex % phrases.length].toUpperCase();
-let encryptedPhrase = currentPhrase.split('').map(char => cipher[char] || char).join('');
+updateCompletedDisplay();
 
 function displayEncryptedPhrase() {
     const phraseContainer = document.querySelector('.phrase');
@@ -60,34 +60,37 @@ function displayEncryptedPhrase() {
         const wordContainer = document.createElement('span');
         wordContainer.className = 'word';
         word.split('').forEach((char, index) => {
-            const container = document.createElement('div');
-            container.style.display = 'inline-block';
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.maxLength = 1;
-            input.dataset.char = cipher[char];
-            input.dataset.original = char; // Store the original character
-            const cipherText = document.createElement('div');
-            cipherText.textContent = cipher[char];
-            cipherText.className = 'cipher';
+            if (/[A-Z]/i.test(char)) {
+                const container = document.createElement('div');
+                container.style.display = 'inline-block';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.dataset.char = cipher[char];
+                input.dataset.original = char; // Store the original character
+                const cipherText = document.createElement('div');
+                cipherText.textContent = cipher[char];
+                cipherText.className = 'cipher';
 
-            container.appendChild(cipherText);
-            container.appendChild(input);
-            wordContainer.appendChild(container);
+                container.appendChild(cipherText);
+                container.appendChild(input);
+                wordContainer.appendChild(container);
+            }
         });
         phraseContainer.appendChild(wordContainer);
     });
-    console.log("Displayed encrypted phrase:", encryptedPhrase); // Log the displayed encrypted phrase
 }
 
 function checkSolution() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
-    const solutionAttempt = Array.from(inputs).map(input => input.value.toUpperCase()).join('');
-    console.log("User solution attempt:", solutionAttempt); // Log user solution
+    const solution = Array.from(inputs).map(input => input.value.toUpperCase()).join('');
     const correctSolution = currentPhrase.replace(/[^A-Z]/g, ''); // Normalize expected solution
-    console.log("Expected solution (normalized):", correctSolution); // Log expected solution normalized for comparison
-    document.getElementById('solution').textContent = solutionAttempt === correctSolution ? 'Correct!' : 'Incorrect, try again!';
-    if (solutionAttempt === correctSolution) markCompleted(currentIndex);
+    if (solution === correctSolution) {
+        document.getElementById('solution').textContent = 'Correct!';
+        markCompleted(currentIndex);
+    } else {
+        document.getElementById('solution').textContent = 'Incorrect, try again!';
+    }
 }
 
 function resetGame() {
@@ -95,10 +98,8 @@ function resetGame() {
     localStorage.setItem('currentIndex', currentIndex);
     cipher = generateCipher();
     currentPhrase = phrases[currentIndex].toUpperCase();
-    encryptedPhrase = currentPhrase.split('').map(char => cipher[char] || char).join('');
     displayEncryptedPhrase();
     document.getElementById('solution').textContent = '';
-    console.log("Game reset to new phrase."); // Log reset event
 }
 
 function toggleAnswer() {
@@ -114,7 +115,6 @@ function toggleAnswer() {
             input.disabled = true;
         });
     }
-    console.log("Answer toggled."); // Log toggle event
 }
 
 function markCompleted(index) {
@@ -123,10 +123,19 @@ function markCompleted(index) {
         completed.push(index);
     }
     localStorage.setItem('completed', JSON.stringify(completed));
-    console.log("Puzzle marked as completed:", index); // Log completed puzzle index
+    updateCompletedDisplay();
 }
 
-window.onload = displayEncryptedPhrase;
+function updateCompletedDisplay() {
+    const completed = JSON.parse(localStorage.getItem('completed') || '[]');
+    const list = document.querySelector('.completed-list');
+    list.textContent = completed.join(', ');
+}
+
+window.onload = function() {
+    displayEncryptedPhrase();
+    updateCompletedDisplay();
+};
 </script>
 </body>
 </html>
