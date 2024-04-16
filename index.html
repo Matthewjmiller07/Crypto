@@ -55,9 +55,9 @@ function displayEncryptedPhrase() {
         const input = document.createElement('input');
         input.type = 'text';
         input.maxLength = 1;
-        input.dataset.char = char;
+        input.value = char;
+        input.oninput = function() { this.value = this.value.toUpperCase(); };
         if (!/[A-Z]/.test(char)) {
-            input.value = char;
             input.disabled = true;
         }
         phraseContainer.appendChild(input);
@@ -66,8 +66,10 @@ function displayEncryptedPhrase() {
 
 function checkSolution() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
-    const solution = Array.from(inputs).map(input => input.value.toUpperCase()).join('');
-    document.getElementById('solution').textContent = solution === currentPhrase ? 'Correct!' : 'Incorrect, try again!';
+    const decryptedPhrase = Array.from(inputs).map(input => {
+        return Object.keys(cipher).find(key => cipher[key] === input.value) || input.value;
+    }).join('');
+    document.getElementById('solution').textContent = decryptedPhrase === currentPhrase ? 'Correct!' : 'Incorrect, try again!';
 }
 
 function resetGame() {
