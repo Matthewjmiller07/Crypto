@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cryptogram Game</title>
+<style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; }
+    h1 { text-align: center; }
+    .game-container { max-width: 600px; margin: auto; padding: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .phrase { margin: 20px 0; font-size: 20px; text-align: center; }
+    input[type="text"] { margin: 5px; width: 40px; height: 40px; font-size: 16px; text-align: center; }
+    button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
+    button:hover { background-color: #0056b3; }
+    #solution { margin-top: 20px; text-align: center; font-size: 24px; }
+</style>
+</head>
+<body>
+<div class="game-container">
+    <h1>Cryptogram Game</h1>
+    <div class="phrase"></div>
+    <div>
+        <button onclick="checkSolution()">Check Solution</button>
+        <button onclick="resetGame()">Reset</button>
+    </div>
+    <div id="solution"></div>
+</div>
+
+<script>
+const phrases = [
+    "It is what it is", "You know what?", "Pretty, pretty, pretty good",
+    "Six bucks pretty good for a little guy. Six bucks pretty good not bad.",
+    "Curly part of a complete breakfast",
+    "Ninety estate drive was the worst house we ever lived in. Why did we ever buy this house? Sheridan road is a highway",
+    "My favorite hectshure is KE. Kosher enough. This is the minhag for Florida.",
+    "I would like to speak to your mangeress"
+];
+
+function generateCipher() {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const shuffled = alphabet.slice().sort(() => Math.random() - 0.5);
+    return alphabet.reduce((acc, letter, i) => {
+        acc[letter] = shuffled[i];
+        return acc;
+    }, {});
+}
+
+let cipher = generateCipher();
+let currentPhrase = phrases[Math.floor(Math.random() * phrases.length)].toUpperCase();
+let encryptedPhrase = currentPhrase.split('').map(char => cipher[char] || char).join('');
+
+function displayEncryptedPhrase() {
+    const phraseContainer = document.querySelector('.phrase');
+    phraseContainer.innerHTML = '';
+    encryptedPhrase.split('').forEach(char => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 1;
+        input.dataset.char = char;
+        if (!/[A-Z]/.test(char)) {
+            input.value = char;
+            input.disabled = true;
+        }
+        phraseContainer.appendChild(input);
+    });
+}
+
+function checkSolution() {
+    const inputs = document.querySelectorAll('.phrase input[type=text]');
+    const solution = Array.from(inputs).map(input => input.value.toUpperCase()).join('');
+    document.getElementById('solution').textContent = solution === currentPhrase ? 'Correct!' : 'Incorrect, try again!';
+}
+
+function resetGame() {
+    cipher = generateCipher();
+    currentPhrase = phrases[Math.floor(Math.random() * phrases.length)].toUpperCase();
+    encryptedPhrase = currentPhrase.split('').map(char => cipher[char] || char).join('');
+    displayEncryptedPhrase();
+    document.getElementById('solution').textContent = '';
+}
+
+window.onload = displayEncryptedPhrase;
+</script>
+</body>
+</html>
