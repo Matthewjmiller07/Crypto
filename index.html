@@ -82,10 +82,12 @@ function displayEncryptedPhrase() {
 
 function checkSolution() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
-    const solution = Array.from(inputs).map(input => input.value.toUpperCase()).join('');
-    console.log("User solution attempt:", solution); // Log user solution
-    document.getElementById('solution').textContent = solution === currentPhrase ? 'Correct!' : 'Incorrect, try again!';
-    if (solution === currentPhrase) markCompleted(currentIndex);
+    const solutionAttempt = Array.from(inputs).map(input => input.value.toUpperCase()).join('');
+    console.log("User solution attempt:", solutionAttempt); // Log user solution
+    const correctSolution = currentPhrase.replace(/[^A-Z]/g, ''); // Normalize expected solution
+    console.log("Expected solution (normalized):", correctSolution); // Log expected solution normalized for comparison
+    document.getElementById('solution').textContent = solutionAttempt === correctSolution ? 'Correct!' : 'Incorrect, try again!';
+    if (solutionAttempt === correctSolution) markCompleted(currentIndex);
 }
 
 function resetGame() {
