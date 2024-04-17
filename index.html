@@ -10,7 +10,7 @@
     .phrase { margin: 20px 0; font-size: 20px; text-align: center; }
     .word { display: inline-block; margin: 0 10px; vertical-align: top; border-bottom: 2px solid black; }
     input[type="text"] { margin: 5px; width: 30px; height: 40px; font-size: 16px; text-align: center; }
-    .cipher { font-size: 12px; color: #777; text-align: center; }
+    .cipher { font-size: 12px; color: #777; text-align: center; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); }
     .apply-all { cursor: pointer; font-size: 10px; color: blue; text-decoration: underline; position: absolute; right: 10px; top: 3px; background-color: #f0f0f0; padding: 2px; border-radius: 3px; display: inline-block; }
     button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
     button:hover { background-color: #0056b3; }
@@ -68,44 +68,51 @@ function displayEncryptedPhrase() {
                 const container = document.createElement('div');
                 container.style.display = 'inline-block';
                 container.style.position = 'relative';
+
+                const cipherText = document.createElement('div');
+                cipherText.textContent = cipher[char];
+                cipherText.className = 'cipher';
+
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.maxLength = 1;
                 input.dataset.char = cipher[char];
                 input.dataset.original = char; // Store the original character
 
-                const applyAllButton = document.createElement('span');
-                applyAllButton.textContent = 'All';
-                applyAllButton.className = 'apply-all';
-                applyAllButton.onclick = function() { replaceAllInstances(cipher[char], input.value); };
-
+                container.appendChild(cipherText);
                 container.appendChild(input);
-                container.appendChild(applyAllButton);
                 wordContainer.appendChild(container);
             }
         });
         phraseContainer.appendChild(wordContainer);
     });
-    displayCipherKey(); // Initially hidden
+}
+
+function toggleCipherKeyAndAnswers() {
+    const inputs = document.querySelectorAll('.phrase input[type=text]');
+    const table = document.querySelector('#cipher-key');
+    const isVisible = table.style.display === '';
+    table.style.display = isVisible ? 'none' : 'table'; // Toggle visibility of cipher key
+    inputs.forEach(input => {
+        if (!isVisible) {
+            input.value = input.dataset.original; // Show answers
+            input.disabled = true;
+        } else {
+            input.value = ''; // Hide answers
+            input.disabled = false;
+        }
+    });
 }
 
 function displayCipherKey() {
     const table = document.querySelector('#cipher-key');
     table.innerHTML = '<tr><th>Letter</th><th>Cipher</th></tr>';
-    Object.keys(cipher).sort().forEach(key => {
+    Object.keys(cipher).forEach(key => {
         const row = table.insertRow(-1);
         const cell1 = row.insertCell(0);
         const cell2 = row.insertCell(1);
         cell1.textContent = key;
         cell2.textContent = cipher[key];
-    });
-}
-
-function replaceAllInstances(charToReplace, newValue) {
-    document.querySelectorAll('input').forEach(el => {
-        if (el.dataset.char === charToReplace) {
-            el.value = newValue.toUpperCase();
-        }
     });
 }
 
@@ -124,22 +131,6 @@ function resetGame() {
     currentPhrase = phrases[currentIndex].toUpperCase();
     displayEncryptedPhrase();
     document.getElementById('solution').textContent = '';
-}
-
-function toggleCipherKeyAndAnswers() {
-    const inputs = document.querySelectorAll('.phrase input[type=text]');
-    const table = document.querySelector('#cipher-key');
-    const isVisible = table.style.display === '';
-    table.style.display = isVisible ? 'none' : '';
-    inputs.forEach(input => {
-        if (isVisible) {
-            input.disabled = false;
-            input.value = '';  // Clear the input field
-        } else {
-            input.value = input.dataset.original;  // Show the original character
-            input.disabled = true;
-        }
-    });
 }
 
 function markCompleted(index) {
@@ -163,6 +154,7 @@ function updateCompletedDisplay() {
 window.onload = function() {
     displayEncryptedPhrase();
     updateCompletedDisplay();
+    displayCipherKey(); // Display the cipher key on load but hide it initially
 };
 </script>
 </body>
