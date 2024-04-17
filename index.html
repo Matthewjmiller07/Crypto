@@ -10,10 +10,11 @@
     .phrase { margin: 40px 0; font-size: 20px; text-align: center; }
     .word { 
         display: inline-block; 
-        margin: 0 10px; 
+        margin: 5px 10px 40px; /* Adjusted margins for better spacing */
         vertical-align: top; 
         border-bottom: 2px solid black; 
         position: relative; 
+        padding-bottom: 10px; /* Additional bottom padding to avoid overlap */
     }
     input[type="text"] { 
         width: 30px; 
@@ -47,7 +48,8 @@
     <div class="phrase"></div>
     <div>
         <button onclick="checkSolution()">Check Solution</button>
-        <button onclick="resetGame()">Reset</button>
+        <button onclick="resetInputs()">Reset</button>
+        <button onclick="newGame()">New Game</button>
         <button onclick="toggleCipherKeyAndAnswers()">Toggle Cipher Key & Answers</button>
     </div>
     <div id="solution"></div>
@@ -72,7 +74,6 @@ let currentPhrase = phrases[currentIndex % phrases.length].toUpperCase();
 window.onload = function() {
     displayEncryptedPhrase();
     updateCompletedDisplay();
-    displayCipherKey();  // Display cipher key initially hidden
 };
 
 function generateCipher() {
@@ -90,7 +91,7 @@ function displayEncryptedPhrase() {
     currentPhrase.replace(/[^A-Z\s]/gi, '').split(' ').forEach(word => {
         const wordContainer = document.createElement('span');
         wordContainer.className = 'word';
-        word.split('').forEach((char, index) => {
+        word.split('').forEach((char) => {
             const container = document.createElement('div');
             container.style.display = 'inline-block';
             container.style.position = 'relative';
@@ -129,35 +130,10 @@ function toggleCipherKeyAndAnswers() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
     const isVisible = table.style.display === '';
     table.style.display = isVisible ? 'none' : 'table';
-    if (table.style.display === 'table') {
-        inputs.forEach(input => {
-            input.value = input.dataset.original;
-            input.disabled = true;
-        });
-    } else {
-        inputs.forEach(input => {
-            input.value = '';
-            input.disabled = false;
-        });
-    }
-}
-
-function displayCipherKey() {
-    const table = document.querySelector('#cipher-key');
-    if (!table.rows.length) {
-        const headerRow = table.insertRow();
-        const letterHead = headerRow.insertCell(0);
-        const cipherHead = headerRow.insertCell(1);
-        letterHead.textContent = 'Letter';
-        cipherHead.textContent = 'Cipher';
-        Object.entries(cipher).forEach(([letter, ciphered]) => {
-            const row = table.insertRow();
-            const cell1 = row.insertCell(0);
-            const cell2 = row.insertCell(1);
-            cell1.textContent = letter;
-            cell2.textContent = ciphered;
-        });
-    }
+    inputs.forEach(input => {
+        input.value = isVisible ? '' : input.dataset.original;
+        input.disabled = !isVisible;
+    });
 }
 
 function checkSolution() {
@@ -168,11 +144,19 @@ function checkSolution() {
     if (solution === correctSolution) markCompleted(currentIndex);
 }
 
-function resetGame() {
+function resetInputs() {
     document.querySelectorAll('input').forEach(input => {
         input.value = '';
         input.disabled = false;
     });
+}
+
+function newGame() {
+    currentIndex = (currentIndex + 1) % phrases.length;
+    currentPhrase = phrases[currentIndex].toUpperCase();
+    cipher = generateCipher();
+    displayEncryptedPhrase();
+    document.getElementById('solution').textContent = '';
 }
 
 function markCompleted(index) {
