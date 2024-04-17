@@ -8,14 +8,16 @@
     h1 { text-align: center; }
     .game-container { max-width: 800px; margin: auto; padding: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .phrase { margin: 20px 0; font-size: 20px; text-align: center; }
-    .word { display: inline-block; margin: 0 10px; vertical-align: top; border-bottom: 2px solid black; } /* Increased space between words */
-    input[type="text"] { margin: 5px; width: 40px; height: 40px; font-size: 16px; text-align: center; position: relative; }
+    .word { display: inline-block; margin: 0 10px; vertical-align: top; border-bottom: 2px solid black; }
+    input[type="text"] { margin: 5px; width: 30px; height: 40px; font-size: 16px; text-align: center; }
     .cipher { font-size: 12px; color: #777; text-align: center; }
-    .apply-all { cursor: pointer; font-size: 12px; color: blue; text-decoration: underline; background-color: #f0f0f0; border: 1px solid #ccc; padding: 3px; position: absolute; right: 50px; top: -5px; } /* Styled as a clear button */
-    button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
+    .apply-all { cursor: pointer; font-size: 10px; color: blue; text-decoration: underline; position: absolute; right: 10px; top: 3px; background-color: #f0f0f0; padding: 2px; border-radius: 3px; display: inline-block; }
+    button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none, border-radius: 5px; }
     button:hover { background-color: #0056b3; }
     #solution, #completed-puzzles { margin-top: 20px; text-align: center; font-size: 24px; }
-    .completed-list { font-size: 18px; color: green; }
+    .completed-list { font-size: 18px; color: green; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 </style>
 </head>
 <body>
@@ -25,10 +27,11 @@
     <div>
         <button onclick="checkSolution()">Check Solution</button>
         <button onclick="resetGame()">Reset</button>
-        <button onclick="toggleAnswer()">Toggle Answer</button>
+        <button onclick="toggleCipherKey()">Toggle Cipher Key</button>
     </div>
     <div id="solution"></div>
-    <div id="completed-puzzles">Completed Puzzles: <span class="completed-list"></span></div>
+    <div id="completed-puzzles">Completed Puzzles: <span class="completed-list"></span> (<span id="completion-percentage"></span>%)</div>
+    <table id="cipher-key"></table>
 </div>
 
 <script>
@@ -72,7 +75,7 @@ function displayEncryptedPhrase() {
                 input.dataset.original = char; // Store the original character
 
                 const applyAllButton = document.createElement('span');
-                applyAllButton.textContent = 'Apply to All Similar Letters';
+                applyAllButton.textContent = 'All';
                 applyAllButton.className = 'apply-all';
                 applyAllButton.onclick = function() { replaceAllInstances(cipher[char], input.value); };
 
@@ -82,6 +85,19 @@ function displayEncryptedPhrase() {
             }
         });
         phraseContainer.appendChild(wordContainer);
+    });
+    displayCipherKey(); // Initially hidden
+}
+
+function displayCipherKey() {
+    const table = document.querySelector('#cipher-key');
+    table.innerHTML = '<tr><th>Letter</th><th>Cipher</th></tr>';
+    Object.keys(cipher).sort().forEach(key => {
+        const row = table.insertRow(-1);
+        const cell1 = row.insertCell(0);
+        const cell2 = row.insertCell(1);
+        cell1.textContent = key;
+        cell2.textContent = cipher[key];
     });
 }
 
@@ -108,6 +124,11 @@ function resetGame() {
     currentPhrase = phrases[currentIndex].toUpperCase();
     displayEncryptedPhrase();
     document.getElementById('solution').textContent = '';
+}
+
+function toggleCipherKey() {
+    const table = document.querySelector('#cipher-key');
+    table.style.display = (table.style.display === 'none' ? '' : 'none');
 }
 
 function toggleAnswer() {
@@ -138,6 +159,9 @@ function updateCompletedDisplay() {
     const completed = JSON.parse(localStorage.getItem('completed') || '[]');
     const list = document.querySelector('.completed-list');
     list.textContent = completed.join(', ');
+    list.onclick = () => alert(`Completed Puzzles: ${completed.join(', ')}`);
+    const percentage = Math.round((completed.length / phrases.length) * 100);
+    document.getElementById('completion-percentage').textContent = percentage;
 }
 
 window.onload = function() {
