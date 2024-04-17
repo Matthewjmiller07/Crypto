@@ -12,7 +12,7 @@
     input[type="text"] { margin: 5px; width: 30px; height: 40px; font-size: 16px; text-align: center; }
     .cipher { font-size: 12px; color: #777; text-align: center; }
     .apply-all { cursor: pointer; font-size: 10px; color: blue; text-decoration: underline; position: absolute; right: 10px; top: 3px; background-color: #f0f0f0; padding: 2px; border-radius: 3px; display: inline-block; }
-    button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none, border-radius: 5px; }
+    button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
     button:hover { background-color: #0056b3; }
     #solution, #completed-puzzles { margin-top: 20px; text-align: center; font-size: 24px; }
     .completed-list { font-size: 18px; color: green; cursor: pointer; }
@@ -27,7 +27,7 @@
     <div>
         <button onclick="checkSolution()">Check Solution</button>
         <button onclick="resetGame()">Reset</button>
-        <button onclick="toggleCipherKey()">Toggle Cipher Key</button>
+        <button onclick="toggleCipherKeyAndAnswers()">Toggle Cipher Key & Answers</button>
     </div>
     <div id="solution"></div>
     <div id="completed-puzzles">Completed Puzzles: <span class="completed-list"></span> (<span id="completion-percentage"></span>%)</div>
@@ -126,24 +126,20 @@ function resetGame() {
     document.getElementById('solution').textContent = '';
 }
 
-function toggleCipherKey() {
-    const table = document.querySelector('#cipher-key');
-    table.style.display = (table.style.display === 'none' ? '' : 'none');
-}
-
-function toggleAnswer() {
+function toggleCipherKeyAndAnswers() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
-    if (inputs[0].disabled) {
-        inputs.forEach(input => {
+    const table = document.querySelector('#cipher-key');
+    const isVisible = table.style.display === '';
+    table.style.display = isVisible ? 'none' : '';
+    inputs.forEach(input => {
+        if (isVisible) {
             input.disabled = false;
             input.value = '';  // Clear the input field
-        });
-    } else {
-        inputs.forEach(input => {
+        } else {
             input.value = input.dataset.original;  // Show the original character
             input.disabled = true;
-        });
-    }
+        }
+    });
 }
 
 function markCompleted(index) {
