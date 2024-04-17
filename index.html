@@ -127,14 +127,28 @@ function replaceAllInstances(charToReplace, newValue) {
 
 function toggleCipherKeyAndAnswers() {
     const table = document.querySelector('#cipher-key');
-    const isVisible = table.style.display === '';
-    table.style.display = isVisible ? 'none' : 'table';
-    displayCipherKey(); // Make sure to populate and show the cipher key
     const inputs = document.querySelectorAll('.phrase input[type=text]');
-    inputs.forEach(input => {
-        input.value = isVisible ? '' : input.dataset.original;
-        input.disabled = !isVisible;
-    });
+    // Determine the current visibility state of the table
+    const isVisible = table.style.display !== 'none';
+    // Toggle the display based on current state
+    table.style.display = isVisible ? 'none' : 'table';
+    
+    // If we are hiding the table (it was visible before)
+    if (isVisible) {
+        // Clear all inputs and disable the display
+        inputs.forEach(input => {
+            input.value = '';
+            input.disabled = false;
+        });
+    } else {
+        // If we are showing the table (it was hidden before)
+        displayCipherKey(); // Make sure to populate and show the cipher key
+        inputs.forEach(input => {
+            // Set each input to show the original (decrypted) character
+            input.value = input.dataset.original;
+            input.disabled = true; // Disable input to prevent editing while answers are shown
+        });
+    }
 }
 
 function displayCipherKey() {
