@@ -127,12 +127,26 @@ function replaceAllInstances(charToReplace, newValue) {
 
 function toggleCipherKeyAndAnswers() {
     const table = document.querySelector('#cipher-key');
-    const inputs = document.querySelectorAll('.phrase input[type=text]');
     const isVisible = table.style.display === '';
     table.style.display = isVisible ? 'none' : 'table';
+    displayCipherKey(); // Make sure to populate and show the cipher key
+    const inputs = document.querySelectorAll('.phrase input[type=text]');
     inputs.forEach(input => {
         input.value = isVisible ? '' : input.dataset.original;
         input.disabled = !isVisible;
+    });
+}
+
+function displayCipherKey() {
+    const table = document.querySelector('#cipher-key');
+    table.innerHTML = ''; // Clear previous entries
+    const headerRow = table.insertRow();
+    headerRow.insertCell(0).textContent = 'Letter';
+    headerRow.insertCell(1).textContent = 'Cipher';
+    Object.keys(cipher).forEach(letter => {
+        const row = table.insertRow();
+        row.insertCell(0).textContent = letter;
+        row.insertCell(1).textContent = cipher[letter];
     });
 }
 
