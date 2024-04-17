@@ -10,17 +10,17 @@
     .phrase { margin: 40px 0; font-size: 20px; text-align: center; }
     .word { 
         display: inline-block; 
-        margin: 0 10px 40px 10px; /* Increased bottom margin */
+        margin: 0 10px 40px 10px; 
         vertical-align: top; 
         border-bottom: 2px solid black; 
-        position: relative; /* Ensures that children are positioned relative to word */
+        position: relative; 
     }
     input[type="text"] { 
         width: 30px; 
         height: 40px; 
         font-size: 16px; 
         text-align: center; 
-        margin-top: 25px; /* Adjusted margin for clear space below cipher text */
+        margin-top: 25px; 
         display: block; 
         margin-left: auto; 
         margin-right: auto; 
@@ -29,23 +29,10 @@
         font-size: 12px; 
         color: #777; 
         position: absolute; 
-        top: 0px; /* Adjusted for visibility above input */
+        top: 0px; 
         left: 50%; 
         transform: translateX(-50%); 
-        margin-top: -25px; /* Added negative margin to lift above the input */
-    }
-    .apply-all { 
-        cursor: pointer; 
-        font-size: 10px; 
-        color: blue; 
-        text-decoration: underline; 
-        position: absolute; 
-        right: -40px; 
-        top: 60px; /* Adjusted to not overlap with input */
-        background-color: #f0f0f0; 
-        padding: 2px; 
-        border-radius: 3px; 
-        display: inline-block; 
+        margin-top: -25px;
     }
     button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
     button:hover { background-color: #0056b3; }
@@ -79,6 +66,15 @@ const phrases = [
     "I would like to speak to your mangeress"
 ];
 
+let cipher = generateCipher();
+let currentIndex = parseInt(localStorage.getItem('currentIndex') || 0);
+let currentPhrase = phrases[currentIndex % phrases.length].toUpperCase();
+
+window.onload = function() {
+    displayEncryptedPhrase();
+    updateCompletedDisplay();
+};
+
 function generateCipher() {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     const shuffled = alphabet.slice().sort(() => Math.random() - 0.5);
@@ -87,10 +83,6 @@ function generateCipher() {
         return acc;
     }, {});
 }
-
-let cipher = generateCipher();
-let currentIndex = parseInt(localStorage.getItem('currentIndex') || 0);
-let currentPhrase = phrases[currentIndex % phrases.length].toUpperCase();
 
 function displayEncryptedPhrase() {
     const phraseContainer = document.querySelector('.phrase');
@@ -101,7 +93,6 @@ function displayEncryptedPhrase() {
         word.split('').forEach((char, index) => {
             if (/[A-Z]/i.test(char)) {
                 const container = document.createElement('div');
-                container.style.display = 'inline-block';
                 container.style.position = 'relative';
 
                 const cipherText = document.createElement('div');
@@ -112,7 +103,11 @@ function displayEncryptedPhrase() {
                 input.type = 'text';
                 input.maxLength = 1;
                 input.dataset.char = cipher[char];
-                input.dataset.original = char; // Store the original character
+                input.dataset.original = char;
+
+                input.addEventListener('input', function() {
+                    replaceAllInstances(this.dataset.char, this.value);
+                });
 
                 container.appendChild(cipherText);
                 container.appendChild(input);
@@ -123,49 +118,43 @@ function displayEncryptedPhrase() {
     });
 }
 
-function toggleCipherKeyAndAnswers() {
-    const inputs = document.querySelectorAll('.phrase input[type=text]');
-    const table = document.querySelector('#cipher-key');
-    const isVisible = table.style.display === '';
-    table.style.display = isVisible ? 'none' : 'table'; // Toggle visibility of cipher key
-    inputs.forEach(input => {
-        if (!isVisible) {
-            input.value = input.dataset.original; // Show answers
-            input.disabled = true;
-        } else {
-            input.value = ''; // Hide answers
-            input.disabled = false;
-        }
+function replaceAllInstances(charToReplace, newValue) {
+    const allInputs = document.querySelectorAll(`input[data-char='${charToReplace}']`);
+    allInputs.forEach(input => {
+        input.value = newValue.toUpperCase();
     });
 }
 
-function displayCipherKey() {
+function toggleCipherKeyAndAnswers() {
     const table = document.querySelector('#cipher-key');
-    table.innerHTML = '<tr><th>Letter</th><th>Cipher</th></tr>';
-    Object.keys(cipher).forEach(key => {
-        const row = table.insertRow(-1);
-        const cell1 = row.insertCell(0);
-        const cell2 = row.insertCell(1);
-        cell1.textContent = key;
-        cell2.textContent = cipher[key];
-    });
+    const inputs = document.querySelectorAll('.phrase input[type=text]');
+    table.style.display = table.style.display === 'none' ? 'table' : 'none';  // Toggle visibility of cipher key
+    if (table.style.display === 'table') {
+        inputs.forEach(input => {
+            input.value = input.dataset.original;
+            input.disabled = true;
+        });
+    } else {
+        inputs.forEach(input => {
+            input.value = '';
+            input.disabled = false;
+        });
+    }
 }
 
 function checkSolution() {
     const inputs = document.querySelectorAll('.phrase input[type=text]');
     const solution = Array.from(inputs).map(input => input.value.toUpperCase()).join('');
-    const correctSolution = currentPhrase.replace(/[^A-Z]/g, ''); // Normalize expected solution
+    const correctSolution = currentPhrase.replace(/[^A-Z]/g, '');
     document.getElementById('solution').textContent = solution === correctSolution ? 'Correct!' : 'Incorrect, try again!';
     if (solution === correctSolution) markCompleted(currentIndex);
 }
 
 function resetGame() {
-    currentIndex = (currentIndex + 1) % phrases.length;
-    localStorage.setItem('currentIndex', currentIndex);
-    cipher = generateCipher();
-    currentPhrase = phrases[currentIndex].toUpperCase();
-    displayEncryptedPhrase();
-    document.getElementById('solution').textContent = '';
+    document.querySelectorAll('input').forEach(input => {
+        input.value = '';
+        input.disabled = false;
+    });
 }
 
 function markCompleted(index) {
@@ -186,11 +175,6 @@ function updateCompletedDisplay() {
     document.getElementById('completion-percentage').textContent = percentage;
 }
 
-window.onload = function() {
-    displayEncryptedPhrase();
-    updateCompletedDisplay();
-    displayCipherKey(); // Display the cipher key on load but hide it initially
-};
 </script>
 </body>
 </html>
