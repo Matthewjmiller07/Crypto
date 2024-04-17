@@ -7,11 +7,46 @@
     body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; }
     h1 { text-align: center; }
     .game-container { max-width: 800px; margin: auto; padding: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .phrase { margin: 40px 0; font-size: 20px; text-align: center; } /* Increased margin around the phrase */
-    .word { display: inline-block; margin: 0 10px; vertical-align: top; border-bottom: 2px solid black; padding-bottom: 20px; } /* Added padding to separate lines */
-    input[type="text"] { margin-top: 20px; width: 30px; height: 40px; font-size: 16px; text-align: center; display: block; margin-left: auto; margin-right: auto; }
-    .cipher { font-size: 12px; color: #777; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); } /* Adjusted position for better visibility */
-    .apply-all { cursor: pointer; font-size: 10px; color: blue; text-decoration: underline; position: absolute; right: -40px; top: 50px; background-color: #f0f0f0; padding: 2px; border-radius: 3px; display: inline-block; } /* Adjusted button position */
+    .phrase { margin: 40px 0; font-size: 20px; text-align: center; }
+    .word { 
+        display: inline-block; 
+        margin: 0 10px 40px 10px; /* Increased bottom margin */
+        vertical-align: top; 
+        border-bottom: 2px solid black; 
+        position: relative; /* Ensures that children are positioned relative to word */
+    }
+    input[type="text"] { 
+        width: 30px; 
+        height: 40px; 
+        font-size: 16px; 
+        text-align: center; 
+        margin-top: 25px; /* Adjusted margin for clear space below cipher text */
+        display: block; 
+        margin-left: auto; 
+        margin-right: auto; 
+    }
+    .cipher { 
+        font-size: 12px; 
+        color: #777; 
+        position: absolute; 
+        top: 0px; /* Adjusted for visibility above input */
+        left: 50%; 
+        transform: translateX(-50%); 
+        margin-top: -25px; /* Added negative margin to lift above the input */
+    }
+    .apply-all { 
+        cursor: pointer; 
+        font-size: 10px; 
+        color: blue; 
+        text-decoration: underline; 
+        position: absolute; 
+        right: -40px; 
+        top: 60px; /* Adjusted to not overlap with input */
+        background-color: #f0f0f0; 
+        padding: 2px; 
+        border-radius: 3px; 
+        display: inline-block; 
+    }
     button { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
     button:hover { background-color: #0056b3; }
     #solution, #completed-puzzles { margin-top: 20px; text-align: center; font-size: 24px; }
@@ -33,6 +68,7 @@
     <div id="completed-puzzles">Completed Puzzles: <span class="completed-list"></span> (<span id="completion-percentage"></span>%)</div>
     <table id="cipher-key"></table>
 </div>
+
 <script>
 const phrases = [
     "It is what it is", "You know what?", "Pretty pretty pretty good",
