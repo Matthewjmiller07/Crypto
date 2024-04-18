@@ -110,8 +110,20 @@ function displayEncryptedPhrase() {
             input.dataset.original = char;
 
             input.addEventListener('input', function() {
-                replaceAllInstances(this.dataset.char, this.value);
+                replaceAllInstances(this.dataset.char, this.value.toUpperCase());
+                focusNextInput(this);
             });
+
+            function focusNextInput(input) {
+                const allInputs = document.querySelectorAll('input[type="text"]');
+                for (let i = 0; i < allInputs.length - 1; i++) {
+                    if (allInputs[i] === input) {
+                        allInputs[i + 1].focus();
+                        break;
+        }
+    }
+}
+
 
             container.appendChild(cipherText);
             container.appendChild(input);
