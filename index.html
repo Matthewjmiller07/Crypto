@@ -67,6 +67,9 @@ const phrases = [
     "I would like to speak to your mangeress"
 ];
 
+// Sort phrases from longest to shortest
+phrases.sort((a, b) => b.length - a.length);
+
 let cipher = generateCipher();
 let currentIndex = parseInt(localStorage.getItem('currentIndex') || 0);
 let currentPhrase = phrases[currentIndex % phrases.length].toUpperCase();
